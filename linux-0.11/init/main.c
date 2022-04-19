@@ -4,7 +4,7 @@
  *  (C) 1991  Linus Torvalds
  */
 
-#define __LIBRARY__
+#define __LIBRARY__ //enable bleow line23 command
 #include <unistd.h>
 #include <time.h>
 
@@ -99,7 +99,7 @@ static long memory_end = 0;
 static long buffer_memory_end = 0;
 static long main_memory_start = 0;
 
-struct drive_info { char dummy[32]; } drive_info;
+struct drive_info { char dummy[32]; } drive_info;	//存放硬盘参数信息表
 
 void main(void)		/* This really IS void, no error here. */
 {			/* The startup routine assumes (well, ...) this */
@@ -108,33 +108,35 @@ void main(void)		/* This really IS void, no error here. */
  * enable them
  */
  	ROOT_DEV = ORIG_ROOT_DEV;
- 	drive_info = DRIVE_INFO;
-	memory_end = (1<<20) + (EXT_MEM_K<<10);
-	memory_end &= 0xfffff000;
-	if (memory_end > 16*1024*1024)
+ 	drive_info = DRIVE_INFO;	//复制0x900080处的磁盘信息表
+	memory_end = (1<<20) + (EXT_MEM_K<<10);	//内存大小=1MB字节+扩展内存*1024字节
+	memory_end &= 0xfffff000;	//忽略不到4Kb的内存数
+	if (memory_end > 16*1024*1024)	//如果内存超过16Mb，按16Mb计算
 		memory_end = 16*1024*1024;
-	if (memory_end > 12*1024*1024) 
+	if (memory_end > 12*1024*1024)	//如何内存超过12Mb，则设置缓冲区末端=4Mb
 		buffer_memory_end = 4*1024*1024;
-	else if (memory_end > 6*1024*1024)
+	else if (memory_end > 6*1024*1024)	//如何内存超过6Mb，则设置缓冲区末端=2Mb
 		buffer_memory_end = 2*1024*1024;
 	else
-		buffer_memory_end = 1*1024*1024;
-	main_memory_start = buffer_memory_end;
-#ifdef RAMDISK
+		buffer_memory_end = 1*1024*1024;	//否则设置缓冲区末端=1Mb
+	main_memory_start = buffer_memory_end;	//主内存起始地址=缓冲区末端
+#ifdef RAMDISK	//是否定义了虚拟盘，如果定义了，主内存空间将减少
 	main_memory_start += rd_init(main_memory_start, RAMDISK*1024);
 #endif
+	//硬菜来了
+	//以下是内核进行所有方面的初始化工作
 	mem_init(main_memory_start,memory_end);
-	trap_init();
-	blk_dev_init();
-	chr_dev_init();
-	tty_init();
-	time_init();
-	sched_init();
-	buffer_init(buffer_memory_end);
-	hd_init();
-	floppy_init();
-	sti();
-	move_to_user_mode();
+	trap_init();	//陷阱门（硬件中断向量）初始化
+	blk_dev_init();	//块设备初始化
+	chr_dev_init();	//字符设备初始化
+	tty_init();		//tty初始化（tty通常是各种类型终端设备的简称）
+	time_init();	//设置开机启动时间
+	sched_init();	//调度程序初始化
+	buffer_init(buffer_memory_end);	//缓冲管理初始化
+	hd_init();	//硬盘初始化
+	floppy_init();	//软驱初始化
+	sti();	//所有初始化完成，开启中断
+	move_to_user_mode();	//移到用户模式下执行
 	if (!fork()) {		/* we count on this going ok */
 		init();
 	}

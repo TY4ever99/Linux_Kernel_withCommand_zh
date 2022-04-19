@@ -4,6 +4,8 @@
         "stdarg.h": "c",
         "io.h": "c",
         "fcntl.h": "c",
-        "fs.h": "c"
+        "fs.h": "c",
+        "unistd.h": "c",
+        "head.h": "c"
     }
 }

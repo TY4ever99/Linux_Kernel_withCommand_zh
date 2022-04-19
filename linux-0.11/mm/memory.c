@@ -42,7 +42,7 @@ __asm__("movl %%eax,%%cr3"::"a" (0))
 /* these are not to be changed without changing head.s etc */
 #define LOW_MEM 0x100000
 #define PAGING_MEMORY (15*1024*1024)
-#define PAGING_PAGES (PAGING_MEMORY>>12)
+#define PAGING_PAGES (PAGING_MEMORY>>12)	//0xF000
 #define MAP_NR(addr) (((addr)-LOW_MEM)>>12)
 #define USED 100
 
@@ -396,7 +396,7 @@ void do_no_page(unsigned long error_code,unsigned long address)
 	oom();
 }
 
-void mem_init(long start_mem, long end_mem)
+void 	mem_init(long start_mem, long end_mem)
 {
 	int i;
 
